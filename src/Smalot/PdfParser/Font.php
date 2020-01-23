@@ -212,19 +212,17 @@ class Font extends PDFObject
                 if($this->chkfont('ู')){
                     $char = '';
                 } else {
-                    if (in_array($this->beforechar, $this->thaichars)) {
-                        if(in_array($this->bbeforechar, $this->thaichars)){
+                    if(in_array($this->beforechar, $this->thaichars)) {
+                        // if(in_array($this->bbeforechar, $this->thaichars)){
                             $char = 'ู';
-                        } else {
-                            $char = '';
-                        }
-                    }else {
+                        // } else {
+                        //     $char = '';
+                        // }
+                    } else {
                         // dump($this->beforechar);
                         $char='';
                     }
                 }
-            } else {
-
             }
         }
 
