@@ -40,7 +40,7 @@ class Font extends PDFObject
     /**
      *
      */
-    const MISSING = '?';
+    const MISSING = '';
 
     /**
      * @var array
@@ -53,6 +53,8 @@ class Font extends PDFObject
     protected $tableSizes = null;
 
     protected $beforechar = null;
+    protected $bbeforechar = null;
+    protected $thaichars = ['ก','ข','ฃ','ค','ฅ','ฆ','ง','จ','ฉ','ช','ซ','ฌ','ญ','ฎ','ฏ','ฐ','ฑ','ฒ','ณ','ด','ต','ถ','ท','ธ','น','บ','ป','ผ','ฝ','พ','ฟ','ภ','ม','ย','ร','ล','ว','ศ','ษ','ส','ห','ฬ','อ','ฮ'];
 
     /**
      *
@@ -95,6 +97,16 @@ class Font extends PDFObject
         return $details;
     }
 
+    protected function chkfont($ch){
+        foreach ( $this->table as $key => $tchar ) {
+            if($ch == $tchar){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     /**
      * @param string $char
      * @param bool   $use_default
@@ -107,7 +119,6 @@ class Font extends PDFObject
         $dec = hexdec(bin2hex($char));
         // dump($this->table);
         // dump($dec);
-        
         $tf = false;
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
@@ -196,12 +207,33 @@ class Font extends PDFObject
             $char = 'ี';
         }
         if($dec == 3) {
+            // dump($this->beforechar.'/'.$dec.'--'.$char);
             if($dec!=$char){
-                $char = 'ู';
+                if($this->chkfont('ู')){
+                    $char = '';
+                } else {
+                    if (in_array($this->beforechar, $this->thaichars)) {
+                        if(in_array($this->bbeforechar, $this->thaichars)){
+                            $char = 'ู';
+                        } else {
+                            $char = '';
+                        }
+                    }else {
+                        // dump($this->beforechar);
+                        $char='';
+                    }
+                }
+            } else {
+
             }
         }
+
+        if($char == 'า' && ( $this->beforechar == 'ำ' || $this->bbeforechar =='ำ') ) $char = '';
+
         // dump($char);
-        $this->beforechar = $dec;
+
+        $this->bbeforechar = $this->beforechar;
+        $this->beforechar = $char;
         return $char;
     }
 
