@@ -210,7 +210,7 @@ class PDFObject
         // Extract text blocks.
         if (preg_match_all('/\s+BT[\s|\(|\[]+(.*?)\s*ET/s', $textCleaned, $matches, PREG_OFFSET_CAPTURE)) {
             foreach ($matches[1] as $part) {
-                $text    = $part[0];
+                $text = $part[0];
                 if ($text === '') {
                     continue;
                 }
@@ -219,7 +219,6 @@ class PDFObject
 
                 // Removes BDC and EMC markup.
                 $section = preg_replace('/(\/[A-Za-z0-9]+\s*<<.*?)(>>\s*BDC)(.*?)(EMC\s+)/s', '${3}', $section . ' ');
-
                 $sections[] = $section;
             }
         }
@@ -234,7 +233,6 @@ class PDFObject
                 $sections[] = $section;
             }
         }
-
         return $sections;
     }
 
@@ -246,6 +244,7 @@ class PDFObject
      */
     public function getText(Page $page = null)
     {
+        //dump('---gettext----');
         $text                = '';
         $sections            = $this->getSectionsText($this->content);
         $current_font = null;
@@ -265,13 +264,11 @@ class PDFObject
         $current_position_tm = array('x' => false, 'y' => false);
 
         array_push(self::$recursionStack, $this->getUniqueId());
-
         foreach ($sections as $section) {
 
             $commands = $this->getCommandsText($section);
 
             foreach ($commands as $command) {
-
                 switch ($command[self::OPERATOR]) {
                     // set character spacing
                     case 'Tc':
@@ -279,6 +276,7 @@ class PDFObject
 
                     // move text current point
                     case 'Td':
+                        //dump('--Td---');
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
@@ -292,20 +290,21 @@ class PDFObject
                             )
                         ) {
                             // horizontal offset
-                            $text .= ' ';
+                            $text .= '';
                         }
                         $current_position_td = array('x' => $x, 'y' => $y);
                         break;
 
                     // move text current point and set leading
                     case 'TD':
+                        //dump('--TD---');
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
                         if (floatval($y) < 0) {
-                            $text .= "\n";
+                            // $text .= "\n";
                         } elseif (floatval($x) <= 0) {
-                            $text .= ' ';
+                            $text .= '';
                         }
                         break;
 
@@ -321,35 +320,40 @@ class PDFObject
                     case 'Tj':
                         $command[self::COMMAND] = array($command);
                     case 'TJ':
+                        // dump('---TJ---');
                         // Skip if not previously defined, should never happened.
                         if (is_null($current_font)) {
                             // Fallback
                             // TODO : Improve
-                            $text .= $command[self::COMMAND][0][self::COMMAND];
+                            $y =$command[self::COMMAND][0][self::COMMAND];
+                            $text .= $y;
                             break;
                         }
-
                         $sub_text = $current_font->decodeText($command[self::COMMAND]);
                         $text .= $sub_text;
                         break;
 
                     // set leading
                     case 'TL':
-                        $text .= ' ';
+                        //dump('--TL---');
+                        $text .= '';
                         break;
 
                     case 'Tm':
+                        // dump('---Tm---');
                         $args = preg_split('/\s/s', $command[self::COMMAND]);
                         $y    = array_pop($args);
                         $x    = array_pop($args);
                         if ($current_position_tm['x'] !== false) {
                             $delta = abs(floatval($x) - floatval($current_position_tm['x']));
+                            //dump('delta1-->'.$delta);
                             if ($delta > 10) {
-                                $text .= "\t";
+                                // $text .= "\t";
                             }
                         }
                         if ($current_position_tm['y'] !== false) {
                             $delta = abs(floatval($y) - floatval($current_position_tm['y']));
+                            //dump('delta2--->'.$delta);
                             if ($delta > 10) {
                                 $text .= "\n";
                             }
@@ -367,11 +371,13 @@ class PDFObject
 
                     // set horizontal scaling
                     case 'Tz':
+                        //dump('---Tz----');
                         $text .= "\n";
                         break;
 
                     // move to start of next line
                     case 'T*':
+                        //dump('---T*----');
                         $text .= "\n";
                         break;
 
@@ -388,7 +394,8 @@ class PDFObject
                              // @todo $xobject could be a ElementXRef object, which would then throw an error
                              if ( is_object($xobject) && $xobject instanceof PDFObject && !in_array($xobject->getUniqueId(), self::$recursionStack) ) {
                                 // Not a circular reference.
-                                $text .= $xobject->getText($page);
+                                $x = $xobject->getText($page);
+                                $text .= $x;
                             }
                         }
                         break;
@@ -433,8 +440,8 @@ class PDFObject
         }
 
         array_pop(self::$recursionStack);
-
-        return $text . ' ';
+        str_replace('ำา','า', $text);
+        return $text . "\n ";
     }
 
 	/**
@@ -566,7 +573,6 @@ class PDFObject
 				}
 			}
 		}
-
 		return $text;
 	}
 

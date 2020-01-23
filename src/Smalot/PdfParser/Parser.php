@@ -94,7 +94,6 @@ class Parser
         list($xref, $data) = $parser->getParsedData();
         unset($parser);
         ob_end_clean();
-
         if (isset($xref['trailer']['encrypt'])) {
             throw new \Exception('Secured pdf file are currently not supported.');
         }
@@ -114,7 +113,6 @@ class Parser
 
         $document->setTrailer($this->parseTrailer($xref['trailer'], $document));
         $document->setObjects($this->objects);
-
         return $document;
     }
 

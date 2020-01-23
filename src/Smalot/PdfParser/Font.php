@@ -52,6 +52,8 @@ class Font extends PDFObject
      */
     protected $tableSizes = null;
 
+    protected $beforechar = null;
+
     /**
      *
      */
@@ -100,15 +102,106 @@ class Font extends PDFObject
      * @return string
      */
     public function translateChar($char, $use_default = true)
-    {
+    {   
+        // dump($this->beforechar);
         $dec = hexdec(bin2hex($char));
-
+        // dump($this->table);
+        // dump($dec);
+        
+        $tf = false;
         if (array_key_exists($dec, $this->table)) {
             $char = $this->table[$dec];
         } else {
             $char = ($use_default ? self::MISSING : $char);
         }
+        
+        if($char ==''){
+            $char = 'ั';
+        }
+        if($char == ''){
+            $char = '้';
+        }
+        if($char == ''){
+            $char = '็';
+        }
+        // if($char == ''){
+        //     $char = '';
+        // }
+        if($dec == '22'){
+            $char = '่';
+        }
+        // if($dec == ''){
+        //     $char = '';
+        // }
+        if($dec == '100'){
+            $char ='์';
+        }
+        if($dec == '80'){
+            $char = '๊';
+        }
+        if($dec == '67'){
+            $char = '๋';
+        }
+        if($dec == '44'){
+            $char = '้';
+        }
+        if($char == ''){
+            $char = '๋';
+        }
+        if($dec == '206'){
+            $char = 'ำ';
+        }
 
+        if($char == ' '){
+            $char = '';
+        }
+        if($char == ' '){
+            $char = '';
+        }
+        if($char == ''){
+            $char = '่';
+        }
+        if($char == ''){
+            $char = '๊';
+        }
+        if($char == ''){
+            $char = 'ื';
+        }
+        if($char == ''){
+            $char = '้';
+        }
+        if($char == ''){
+            $char = '๋';
+        }
+        if($char == ''){
+            $char = 'ิ';
+        }
+
+        if($char == ''){
+            $char = 'ึ';
+        }
+        if($char == ''){
+            $char = '่';
+        }
+        if($char ==''){
+            $char = '้';
+        }
+        if($char ==''){
+            $char = '่';
+        }
+        if($char == ''){
+            $char = '์';
+        }
+        if($char == ''){
+            $char = 'ี';
+        }
+        if($dec == 3) {
+            if($dec!=$char){
+                $char = 'ู';
+            }
+        }
+        // dump($char);
+        $this->beforechar = $dec;
         return $char;
     }
 
@@ -383,7 +476,7 @@ class Font extends PDFObject
                     // Decode octal (if necessary).
                     $text = self::decodeOctal($command[PDFObject::COMMAND]);
             }
-
+            // dump($text);
             // replace escaped chars
             $text = str_replace(
                 array('\\\\', '\(', '\)', '\n', '\r', '\t', '\ '),
@@ -399,12 +492,16 @@ class Font extends PDFObject
             }
         }
 
+       
         foreach ($words as &$word) {
             $loop_unicode = $unicode;
             $word         = $this->decodeContent($word, $loop_unicode);
+            if($word == 'ำ'){
+                $testarm = true;
+            }
         }
-
-        return implode(' ', $words);
+        $xx =  implode('', $words);
+        return $xx;
     }
 
     /**
@@ -416,20 +513,17 @@ class Font extends PDFObject
     protected function decodeContent($text, &$unicode)
     {
         if ($this->has('ToUnicode')) {
-
             $bytes = $this->tableSizes['from'];
-
             if ($bytes) {
                 $result = '';
                 $length = strlen($text);
-
+                $testarm = false;
                 for ($i = 0; $i < $length; $i += $bytes) {
                     $char = substr($text, $i, $bytes);
-
+                    // dump('bf--'.$char);
                     if (($decoded = $this->translateChar($char, false)) !== false) {
-                        $char = $decoded;
+                            $char = $decoded;
                     } elseif ($this->has('DescendantFonts')) {
-
                         if ($this->get('DescendantFonts') instanceof PDFObject) {
                             $fonts   = $this->get('DescendantFonts')->getHeader()->getElements();
                         } else {
@@ -516,7 +610,6 @@ class Font extends PDFObject
                 $text = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
             }
         }
-
         return $text;
     }
 }
