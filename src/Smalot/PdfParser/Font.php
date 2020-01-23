@@ -209,7 +209,10 @@ class Font extends PDFObject
         if($dec == 3) {
             // dump($this->beforechar.'/'.$dec.'--'.$char);
             if($dec!=$char){
-                if($this->chkfont('ู')){
+                // dump($this->chkfont('ู'));
+                if($char == 'ู'){
+
+                } else if($this->chkfont('ู')){
                     $char = '';
                 } else {
                     if(in_array($this->beforechar, $this->thaichars)) {
@@ -220,7 +223,7 @@ class Font extends PDFObject
                         // }
                     } else {
                         // dump($this->beforechar);
-                        $char='';
+                        $char= '';
                     }
                 }
             }
